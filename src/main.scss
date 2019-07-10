@@ -1,0 +1,110 @@
+@import 'reset';
+
+$color: hsl(220, 100%, 50%);
+
+html {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 18px;
+}
+
+.container {
+  background-color: hsl(220, 10%, 98%);  
+  height: 100vh;
+  max-width: 100%;
+  position: relative;
+  width: 100vw;
+}
+
+@keyframes animation-coinTarget {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nav {
+  $_height: 80px;
+
+  align-items: center;
+  background-color: $color;
+  box-sizing: border-box;
+  display: flex;
+  height: $_height;
+  left: 0;
+  max-width: 100%;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+
+  .coinTarget {
+    $__height: 40px;
+
+    background-color: white;
+    border-radius: $__height;
+    font-weight: 700;
+    height: $__height;
+    line-height: $__height;
+    padding: 0 20px;
+    transform-origin: 50% 50%;
+
+    &.coinTarget--animate {
+      animation-duration: 0.4s;
+      animation-fill-mode: forwards;
+      animation-name: animation-coinTarget;
+      animation-timing-function: ease-out;
+    }
+  }
+}
+
+.collect-button {
+  $_height: 50px;
+  $_width: 140px;
+
+  background-color: $color;
+  border-radius: $_height;
+  box-sizing: border-box;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  height: $_height;
+  left: 50%;
+  line-height: $_height;
+  margin-left: - ($_width / 2);
+  padding: 0 20px;
+  position: fixed;
+  text-align: center;
+  top: 50%;
+  width: $_width;
+
+  transition-duration: 0.2s;
+  transition-property: background-color;
+  transition-timing-function: ease-out;
+
+  &:hover {
+    background-color: hsl(220, 100%, 60%);
+  }
+
+  &:active {
+    background-color: hsl(220, 100%, 40%);
+  }
+}
+
+.coin {
+  $_size: 24px;
+  $_shadow-size: 2px;
+
+  background-color: yellow;
+  background-size: cover;
+  border-radius: $_size * 2;
+  height: $_size;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: $_size;
+}
