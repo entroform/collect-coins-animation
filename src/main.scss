@@ -8,7 +8,7 @@ html {
 }
 
 .container {
-  background-color: hsl(220, 10%, 98%);  
+  background-color: hsl(220, 20%, 5%);  
   height: 100vh;
   max-width: 100%;
   position: relative;
@@ -87,11 +87,11 @@ html {
   transition-timing-function: ease-out;
 
   &:hover {
-    background-color: hsl(220, 100%, 60%);
+    background-color: hsl(220, 100%, 40%);
   }
 
   &:active {
-    background-color: hsl(220, 100%, 40%);
+    background-color: hsl(220, 100%, 20%);
   }
 }
 
@@ -99,9 +99,11 @@ html {
   $_size: 24px;
   $_shadow-size: 2px;
 
-  background-color: yellow;
+  background-color: hsl(60, 100%, 50%);
   background-size: cover;
+  border: 3px solid hsl(40, 100%, 50%);
   border-radius: $_size * 2;
+  box-sizing: border-box;
   height: $_size;
   left: 0;
   position: fixed;
