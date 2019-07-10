@@ -317,6 +317,7 @@ const COIN_MANAGER_DEFAULT_CONFIG = {
 
   amount: 500,
   increment: 10,
+  maxNumberOfCoins: 'infinite',
 
   timingFunction: function(t) { return t * t * t },
 
@@ -332,7 +333,7 @@ const COIN_MANAGER_DEFAULT_CONFIG = {
   minAngleIntensity: 0,
   maxAngleIntensity: Math.PI / 2,
 
-  varyCurve: false,
+  noSCurve: false,
 
   coinClassName: 'coin',
   beforeStart: function() {},
@@ -392,24 +393,39 @@ CoinManager.prototype = {
   },
   populate: function() {
     this.coins = [];
-    let numberOfCoins = 0, remainder = 0;
+    let amount = this.config.increment, remainder = 0, numberOfCoins = 0;
+
     // Calculate number of coins and remainder.
     if (this.config.increment > 0 && this.config.amount > 0) {
       remainder = this.config.amount % this.config.increment;
       let difference = this.config.amount - remainder;
       numberOfCoins = (difference === 0) ? 1 : difference / this.config.increment;
     }
+
+    if (
+      typeof this.config.maxNumberOfCoins === 'number'
+      && numberOfCoins > this.config.maxNumberOfCoins
+    ) {
+      if (this.config.maxNumberOfCoins <= 0) {
+        numberOfCoins = 0;
+      } else {
+        numberOfCoins = this.config.maxNumberOfCoins;
+        remainder = this.config.amount % numberOfCoins;
+        amount = (this.config.amount - remainder) / numberOfCoins;
+      }
+    }
+   
     // Loop through number of coins and populate points array.
     for (let i = 0; i < numberOfCoins; i++) {
       let config = this.getCoinConfig()
-      config.amount = this.config.increment;
+      config.amount = amount;
       if (i === numberOfCoins - 1 && remainder > 0) config.amount = remainder;
       this.coins.push(new Coin(this, config));
     }
   },
   getCoinConfig: function() {
     let curveStartAngle, curveEndAngle;
-    if (this.config.varyCurve === true) {
+    if (this.config.noSCurve === false) {
       curveStartAngle = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
       curveEndAngle = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
     } else {
@@ -458,8 +474,10 @@ const coinManager = new CoinManager({
 
   timingFunction: function(t) { return t; },
 
-  amount: 504,
+  amount: 1000,
   increment: 20,
+
+  maxNumberOfCoins: 'infinite',
 
   minDelay: 0,
   maxDelay: 0,
@@ -470,7 +488,7 @@ const coinManager = new CoinManager({
   maxIntensity: 0.5,
   maxAngleIntensity: Math.PI / 4,
 
-  varyCurve: false,
+  noSCurve: true,
 
   onCoinComplete: function(coin) {
     endElement.classList.remove('coinTarget--animate');
