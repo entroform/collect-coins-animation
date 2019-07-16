@@ -151,7 +151,7 @@ var Animation = function(config) {
 Animation.prototype = {
   init: function(config) {
     this.config = Util.objectAssign({}, ANIMATION_DEFAULT_CONFIG);
-    this.applyConfig(config);
+    this.setConfig(config);
     this.rafID;
     this.timeoutID;
     this.timeStart = 0;
@@ -160,7 +160,7 @@ Animation.prototype = {
     this.isAnimating = false;
     this.progress = 0;
   },
-  applyConfig: function(config) {
+  setConfig: function(config) {
     if (typeof config === 'object')
       Util.objectAssign(this.config, config);
   },
@@ -248,7 +248,7 @@ Coin.prototype = {
   // 1) Initialize properties and set config.
   init: function(manager, config) {
     this.config = Util.objectAssign({}, COIN_DEFAULT_CONFIG);
-    this.applyConfig(config);
+    this.setConfig(config);
 
     this.manager = manager;
     this.animation = new Animation();
@@ -260,7 +260,7 @@ Coin.prototype = {
     this.controlPoint2 = this.getControlPointVector(this.config.endVector,   this.config.startVector, this.config.curveEndIntensity,   this.config.curveEndAngle);
   },
   // 2) Set coin config.
-  applyConfig: function(config) {
+  setConfig: function(config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
   // 3) Helper function to calculate control point vectors.
@@ -278,7 +278,7 @@ Coin.prototype = {
   // 4) Start here.
   start: function() {
     this.animation.stop();
-    this.animation.applyConfig({
+    this.animation.setConfig({
       delay: this.config.delay,
       duration: this.config.duration,
       timingFunction: this.config.timingFunction,
@@ -350,7 +350,7 @@ CoinManager.prototype = {
   // 1) Initialize properties and stuff.
   init: function(config) {
     this.config = Util.objectAssign({}, COIN_MANAGER_DEFAULT_CONFIG);
-    this.applyConfig(config);
+    this.setConfig(config);
 
     this.animation;
     this.isActive = false;
@@ -366,7 +366,7 @@ CoinManager.prototype = {
     this.offsetRight;
   },
   // 2) Set config.
-  applyConfig: function(config) {
+  setConfig: function(config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
   // 3) Trigger Start.
