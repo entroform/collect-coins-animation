@@ -1,8 +1,8 @@
 // @Util
-const Util = {
+var Util = {
   objectAssign: function(object1, object2) {
-    const keys = Object.keys(object2);
-    for (let i = 0; i < keys.length; i++)
+    var keys = Object.keys(object2);
+    for (var i = 0; i < keys.length; i++)
       object1[keys[i]] = object2[keys[i]];
     return object1;
   },
@@ -18,10 +18,10 @@ const Util = {
     return Math.pow(1 - t, 3) * p1 + 3 * t * Math.pow(1 - t, 2) * cp1 + 3 * t * t * (1 - t) * cp2 + t * t * t * p2;
   },
   hypotenuse: function(x, y) {
-    let max = Math.max(Math.abs(x), Math.abs(y));
+    var max = Math.max(Math.abs(x), Math.abs(y));
     if (max === 0) max = 1;
-    const min = Math.min(Math.abs(x), Math.abs(y));    
-    const n = min / max;
+    var min = Math.min(Math.abs(x), Math.abs(y));    
+    var n = min / max;
     return max * Math.sqrt(1 + n * n);
   },
   lerp: function(from, to, t) {
@@ -30,8 +30,8 @@ const Util = {
   modulate(number, from, to) {
     if (typeof from === 'number') from = [0, from];
     if (typeof to === 'number') to = [0, to];
-    const percent = (number - from[0]) / (from[1] - from[0]);
-    let result;
+    var percent = (number - from[0]) / (from[1] - from[0]);
+    var result;
     if (to[1] > to[0]) {
       result = percent * (to[1] - to[0]) + to[0];
     } else {
@@ -45,11 +45,11 @@ const Util = {
   },
   cycleNumber(number, range) {
     if (typeof range === 'number') range = [0, range];
-    const max = Math.max(range[0], range[1]);
-    const min = Math.min(range[0], range[1]);
+    var max = Math.max(range[0], range[1]);
+    var min = Math.min(range[0], range[1]);
     if (max === 0 && min === 0) return 0;
-    const da = Util.getEuclideanDistance(min, max);
-    let db, c;
+    var da = Util.getEuclideanDistance(min, max);
+    var db, c;
     if (number > max) {
       db = Util.getEuclideanDistance(number, max);
       c = db % da + min;
@@ -64,7 +64,7 @@ const Util = {
 };
 
 // @Vector2
-const Vector2 = function(x, y) {
+var Vector2 = function(x, y) {
   this.init(x, y);
 };
 
@@ -105,7 +105,7 @@ Vector2.prototype = {
     return Util.hypotenuse(this.x, this.y);
   },
   normalize: function() {
-    let mag = Math.abs(this.magnitude()); 
+    var mag = Math.abs(this.magnitude()); 
     mag = mag === 0 ? 1 : mag;
     this.x /= mag;
     this.y /= mag;
@@ -116,7 +116,7 @@ Vector2.prototype = {
     this.y = Util.cubicBezier(t, p1.y, cp1.y, cp2.y, p2.y);
   },
   getAngle: function() {
-    let angle = Math.acos(this.x / this.magnitude());
+    var angle = Math.acos(this.x / this.magnitude());
     if (this.y < 0) angle = Math.PI + (Math.PI - angle);
     return angle;
   },
@@ -135,7 +135,7 @@ Vector2.subtract = function(a, b) {
 };
 
 // @Animation
-const ANIMATION_DEFAULT_CONFIG = {
+var ANIMATION_DEFAULT_CONFIG = {
   duration: 1000, // In ms
   delay: 0,
   timingFunction: function(t) { return t },
@@ -144,14 +144,14 @@ const ANIMATION_DEFAULT_CONFIG = {
   onComplete: function() {},
 };
 
-const Animation = function(config) {
+var Animation = function(config) {
   this.init(config);
 };
 
 Animation.prototype = {
   init: function(config) {
     this.config = Util.objectAssign({}, ANIMATION_DEFAULT_CONFIG);
-    this.setConfig(config);
+    this.applyConfig(config);
     this.rafID;
     this.timeStart = 0;
     this.timeEnd = 0;
@@ -159,14 +159,18 @@ Animation.prototype = {
     this.isAnimating = false;
     this.progress = 0;
   },
-  setConfig: function(config) {
+  applyConfig: function(config) {
     if (typeof config === 'object')
       Util.objectAssign(this.config, config);
   },
   updateProgress: function() {
-    const now = Date.now();
-    this.progress = (now - this.timeStart) / this.config.duration;
-    if (this.progress > 1) this.progress = 1;
+    if (typeof this.config.duration === 'number') {
+      var now = Date.now();
+      this.progress = (now - this.timeStart) / this.config.duration;
+      if (this.progress > 1) this.progress = 1;
+    } else {
+      this.progress = 0;
+    }
   },
   loop: function() {
     if (this.isAnimating === true) {
@@ -213,7 +217,7 @@ Animation.prototype = {
 }
 
 // @Coin
-const COIN_DEFAULT_CONFIG = {
+var COIN_DEFAULT_CONFIG = {
   // Animation
   delay: 1000,
   duration: 1000,
@@ -230,68 +234,38 @@ const COIN_DEFAULT_CONFIG = {
   curveStartAngle: 0,
   curveEndAngle: 0,
 
-  prepareElement: function() {},
-
-  move: function(pointElement, position) {
-    const left = pointElement.offsetWidth / 2;
-    const top = pointElement.offsetHeight / 2;
-    pointElement.style.transform = `translateX(${position.x - left}px) translateY(${position.y - top}px)`;
-  },
-
   beforeStart: function() {},
   onComplete: function() {},
 };
 
-const Coin = function(manager, config) {
+var Coin = function(manager, config) {
   this.init(manager, config);
 };
 
 Coin.prototype = {
+  // 1) Initialize properties and set config.
   init: function(manager, config) {
     this.config = Util.objectAssign({}, COIN_DEFAULT_CONFIG);
-    this.setConfig(config);
-
-    this.amount = this.config.amount;
+    this.applyConfig(config);
 
     this.manager = manager;
     this.animation = new Animation();
     this.isActive = false;
-    this.element;
 
+    this.amount = this.config.amount;
     this.position = new Vector2().copy(this.config.startVector);
     this.controlPoint1 = this.getControlPointVector(this.config.startVector, this.config.endVector,   this.config.curveStartIntensity, this.config.curveStartAngle);
     this.controlPoint2 = this.getControlPointVector(this.config.endVector,   this.config.startVector, this.config.curveEndIntensity,   this.config.curveEndAngle);
   },
-  setConfig: function(config) {
+  // 2) Set coin config.
+  applyConfig: function(config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
-  destroy: function() {
-    if (Util.isHTMLElement(this.element) === true) this.element.remove();
-  },
-  start: function() {
-    this.animation.stop();
-    this.animation.setConfig({
-      delay: this.config.delay,
-      duration: this.config.duration,
-      timingFunction: this.config.timingFunction,
-      onStart: function() {
-        this.create();
-        this.config.beforeStart(this);
-      }.bind(this),
-      onTick: this.tick.bind(this),
-      onComplete: this.end.bind(this),
-    });
-    this.animation.play();
-  },
-  end: function() {
-    this.destroy();
-    this.config.onComplete(this);
-    this.manager.onCoinEnd();
-  },
+  // 3) Helper function to calculate control point vectors.
   getControlPointVector: function(from, to, intensity, angleOffset) {
-    const distance = from.getDistanceTo(to);
-    const length = distance * intensity;
-    const angle = Util.cycleNumber(
+    var distance = from.getDistanceTo(to);
+    var length = distance * intensity;
+    var angle = Util.cycleNumber(
       from.getAngleTo(to) + angleOffset, Math.PI * 2
     );
     return new Vector2(
@@ -299,22 +273,49 @@ Coin.prototype = {
       from.y + Math.sin(angle) * length,
     );
   },
+  // 4) Start here.
+  start: function() {
+    this.animation.stop();
+    this.animation.applyConfig({
+      delay: this.config.delay,
+      duration: this.config.duration,
+      timingFunction: this.config.timingFunction,
+      onStart: function() {
+        this.config.beforeStart(this);
+        this.isActive = true;
+      }.bind(this),
+      onTick: this.tick.bind(this),
+      onComplete: this.end.bind(this),
+    });
+    this.animation.play();
+  },
+  // 5)
   tick: function(t) {
     this.position.applyCubicBezier(t, this.config.startVector, this.controlPoint1, this.controlPoint2, this.config.endVector);
-    this.config.move(this.element, this.position, this);
+  },
+  // 6) This is called once animation is completed.
+  end: function() {
+    this.isActive = false;
+    this.config.onComplete(this);
+    this.manager.onCoinEnd();
   },
 }
 
 // @CoinManager
-const COIN_MANAGER_DEFAULT_CONFIG = {
+var COIN_MANAGER_DEFAULT_CONFIG = {
   startElement: null,
   endElement: null,
   parentElement: null,
 
+  canvasMargin: 100,
+  resolutionMultiplier: 1,
+  zIndex: 0,
+
+  imageURL: '',
+  coinSize: 20,
   amount: 500,
   increment: 10,
   maxNumberOfCoins: 'infinite',
-  imageURL: './coin.svg',
 
   timingFunction: function(t) { return t * t * t },
 
@@ -332,103 +333,75 @@ const COIN_MANAGER_DEFAULT_CONFIG = {
 
   noSCurve: false,
 
-  coinClassName: 'coin',
-  beforeStart: function() {},
   onCoinStart: function(coin) {},
   onCoinComplete: function(coin) {},
+
+  beforeStart: function() {},
   onComplete: function() {},
 };
 
-const CoinManager = function(config) {
+var CoinManager = function(config) {
   this.init(config);
 };
 
 CoinManager.prototype = {
-  // 1) Initialize everything.
+  // 1) Initialize properties and stuff.
   init: function(config) {
     this.config = Util.objectAssign({}, COIN_MANAGER_DEFAULT_CONFIG);
-    this.setConfig(config);
+    this.applyConfig(config);
 
-    this.animation = new Animation({
-      duration: 'infinite',
-
-    });
+    this.animation;
     this.isActive = false;
     this.startVector;
     this.endVector;
     this.coins = [];
     this.endCount = 0;
     this.canvasElement;
-    this.ctx;
+    this.context;
+    this.image;
+
+    this.offsetLeft;
+    this.offsetRight;
   },
   // 2) Set config.
-  setConfig: function(config) {
+  applyConfig: function(config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
   // 3) Trigger Start.
   start: function() {
-    this.createCanvas(this.begin.bind(this));
+    this.setup(this.begin.bind(this));
   },
-  // 4) Create canvas element. Takes in a callback (begin method).
-  createCanvas: function(callback) {
-    if (typeof this.canvasElement === 'undefined') {
-      this.canvasElement = document.createElement('CANVAS');
-      this.canvasElement.style.width = '100vw';
-      this.canvasElement.style.maxWidth = '100%';
-      this.canvasElement.style.height = '100vw';
-      this.canvasElement.style.maxHeight = '100%';
-      this.canvasElement.style.position = 'absolute';
-      this.canvasElement.style.left = '0';
-      this.canvasElement.style.top = '0';
-      this.ctx = canvasElement.getContext('2d');
-      var img = new Image();
-      img.onLoad = function() {
-        this.config.parentElement.appendChild(this.canvasElement);
-        this.callback();
-      }
-      img.src = this.config.imgURL;
-    }
-  },
-  // 5) This is called after canvasElement is defined.
-  begin: function() {
+  // 4) Setup target vectors, initialize coin objects, and create canvas.
+  setup: function(callback) {
     if (this.isActive === false) {
+      this.isActive = true;
       this.getTargetVectors();
       this.populate();
-      this.isActive = true;
-      this.config.beforeStart();
-      for (let i = 0; i < this.coins.length; i++) this.coins[i].start();
-      if (this.coins.length === 0) this.end();
+      this.createCanvas(callback);
     }
   },
-  onCoinEnd: function() {
-    this.endCount++;
-    if (this.endCount === this.coins.length) this.end();
-  },
-  end: function() {
-    this.coins = [];
-    this.endCount = 0;
-    this.isActive = false;
-    this.config.onComplete();
-  },
+  // 5) Set starting and ending vectors from config elements.
   getTargetVectors: function() {
     this.startVector = this.getTargetVectorFromElement(this.config.startElement);
     this.endVector   = this.getTargetVectorFromElement(this.config.endElement);
   },
+  // 6) Helper function to get center vector of element.
   getTargetVectorFromElement: function(element) {
-    const rect = element.getBoundingClientRect();
+    var rect = element.getBoundingClientRect();
     return new Vector2(
       rect.left + (rect.width  / 2),
       rect.top  + (rect.height / 2),
     );
   },
+  // 7) Prepare, calculate, and initialize coin objects.
   populate: function() {
     this.coins = [];
-    let amount = this.config.increment, remainder = 0, numberOfCoins = 0;
+    var amount = this.config.increment, remainder = 0, numberOfCoins = 0;
 
     // Calculate number of coins and remainder.
     if (this.config.increment > 0 && this.config.amount > 0) {
       remainder = this.config.amount % this.config.increment;
-      let difference = this.config.amount - remainder;
+      var difference = this.config.amount - remainder;
       numberOfCoins = (difference === 0) ? 1 : difference / this.config.increment;
     }
 
@@ -444,22 +417,22 @@ CoinManager.prototype = {
         amount = (this.config.amount - remainder) / numberOfCoins;
       }
     }
-   
     // Loop through number of coins and populate points array.
-    for (let i = 0; i < numberOfCoins; i++) {
-      let config = this.getCoinConfig()
+    for (var i = 0; i < numberOfCoins; i++) {
+      var config = this.getCoinConfig()
       config.amount = amount;
       if (i === numberOfCoins - 1 && remainder > 0) config.amount = remainder;
       this.coins.push(new Coin(this, config));
     }
   },
+  // 8) This factory function generates config for each coin object.
   getCoinConfig: function() {
-    let curveStartAngle, curveEndAngle;
+    var curveStartAngle, curveEndAngle;
     if (this.config.noSCurve === false) {
       curveStartAngle = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
       curveEndAngle = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
     } else {
-      const curve = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
+      var curve = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
       curveStartAngle = curve;
       curveEndAngle = - curve;
     }
@@ -482,27 +455,124 @@ CoinManager.prototype = {
       onComplete: this.config.onCoinComplete,
     }
   },
+  // 9) Create canvas element and calculate offset. Takes in a callback (begin method).
+  createCanvas: function(callback) {
+    if (
+      this.isActive === true
+      && typeof this.canvasElement === 'undefined'
+    ) {
+      this.offsetLeft = Math.min(this.startVector.x, this.endVector.x) - this.config.canvasMargin;
+      this.offsetTop  = Math.min(this.startVector.y, this.endVector.y) - this.config.canvasMargin;
+      var right  = Math.max(this.startVector.x, this.endVector.x);
+      var bottom = Math.max(this.startVector.y, this.endVector.y);
+      var width  = right - this.offsetLeft + this.config.canvasMargin * 2;
+      var height = bottom - this.offsetTop + this.config.canvasMargin * 2;
+
+      this.canvasElement = document.createElement('CANVAS');
+      this.canvasElement.style.position  = 'absolute';
+      this.canvasElement.style.zIndex    = this.config.zIndex.toString();
+      this.canvasElement.style.left      = this.offsetLeft.toString() + 'px';
+      this.canvasElement.style.top       = this.offsetTop.toString()  + 'px';
+      this.canvasElement.style.width     = width.toString()  + 'px';
+      this.canvasElement.style.height    = height.toString() + 'px';
+      this.canvasElement.width  = width  * this.config.resolutionMultiplier;
+      this.canvasElement.height = height * this.config.resolutionMultiplier;
+      this.context = this.canvasElement.getContext('2d');
+      this.image = new Image();
+      this.image.onload = function() {
+        this.config.parentElement.appendChild(this.canvasElement);
+        callback();
+      }.bind(this);
+      this.image.src = this.config.imageURL;
+    }
+  },
+  // 10) This is called once canvasElement is defined and is in the DOM. Start animation!
+  begin: function() {
+    if (this.isActive === true) {
+      this.config.beforeStart();
+      this.startAnimation();
+      if (this.coins.length === 0) this.end();
+    }
+  },
+  // 11) Initialize animation object and start it.
+  startAnimation: function() {
+    this.animation = new Animation({
+      delay: this.config.delay,
+      duration: 'infinite',
+      timingFunction: function(t) { return t },
+      onStart: function() {
+        this.config.beforeStart(this);
+      }.bind(this),
+      onTick: this.update.bind(this),
+    });
+    for (var i = 0; i < this.coins.length; i++) {
+      this.coins[i].start();
+    }
+    this.animation.play();
+  },
+  // 12) Loop through each coins and draw them.
+  update: function() {
+    this.clearCanvas();
+    var m = this.config.resolutionMultiplier;
+    for (var i = 0; i < this.coins.length; i++) {
+      if (this.coins[i].isActive === true) {
+        this.context.drawImage(
+          this.image,
+          (this.coins[i].position.x - this.offsetLeft - (this.config.coinSize / 2)) * m,
+          (this.coins[i].position.y - this.offsetTop  - (this.config.coinSize / 2)) * m,
+          this.config.coinSize * m,
+          this.config.coinSize * m
+        );
+      }
+    }
+  },
+  // 13) Helper function to clear canvas every frame.
+  clearCanvas: function() {
+    this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+  },
+  // 14) This is called everytime a coin has completed its journey.
+  onCoinEnd: function() {
+    this.clearCanvas();
+    this.endCount++;
+    if (this.endCount === this.coins.length) this.end();
+  },
+  // 15) This is called after the last coin reached the end. Or if numberOfCoins is 0. Sayonara!
+  end: function() {
+    this.animation.stop();
+    this.canvasElement.remove();
+    this.canvasElement = undefined;
+    this.image = undefined;
+    this.coins = [];
+    this.endCount = 0;
+    this.isActive = false;
+    this.config.onComplete();
+  },
 }
 
 // Implementation.
-const containerElement = document.querySelector('.container');
-const startElement     = document.querySelector('.collect-button');
-const endElement       = document.querySelector('.coinTarget');
-const coinsValue       = document.querySelector('.coinsValue');
+import coinsvg from './coin.svg';
 
-const coinManager = new CoinManager({
-  coinClassName: 'coin',
+var containerElement = document.querySelector('.container');
+var startElement     = document.querySelector('.collect-button');
+var endElement       = document.querySelector('.coinTarget');
+var coinsValue       = document.querySelector('.coinsValue');
 
+var coinManager = new CoinManager({
   startElement: startElement,
   endElement: endElement,
   parentElement: containerElement,
 
-  timingFunction: function(t) { return t; },
+  canvasMargin: 100,
+  resolutionMultiplier: 1,
+  zIndex: 1000,
 
+  imageURL: coinsvg,
+  coinSize: 20,
   amount: 1000,
   increment: 20,
+  maxNumberOfCoins: 300,
 
-  maxNumberOfCoins: 'infinite',
+  timingFunction: function(t) { return t; },
 
   minDelay: 0,
   maxDelay: 0,
@@ -520,6 +590,7 @@ const coinManager = new CoinManager({
     endElement.classList.add('coinTarget--animate');
     coinsValue.textContent = parseInt(coinsValue.textContent, 10) + coin.amount;
   }.bind(this),
+
   onComplete: function() {
     endElement.classList.remove('coinTarget--animate');
   },
