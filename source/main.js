@@ -153,6 +153,7 @@ Animation.prototype = {
     this.config = Util.objectAssign({}, ANIMATION_DEFAULT_CONFIG);
     this.applyConfig(config);
     this.rafID;
+    this.timeoutID;
     this.timeStart = 0;
     this.timeEnd = 0;
     this.isActive = false;
@@ -196,7 +197,7 @@ Animation.prototype = {
   play: function() {
     if (this.isActive === false) {
       this.isActive = true;
-      setTimeout(function() {
+      this.timeoutID = setTimeout(function() {
         this.isAnimating = true;
         this.timeStart = Date.now();
         this.config.onStart(this);
@@ -207,6 +208,7 @@ Animation.prototype = {
   stop: function() {
     if (this.isActive === true) {
       window.cancelAnimationFrame(this.rafID);
+      clearTimeout(this.timeoutID);
       this.isAnimating = false;
       this.isActive = false;
       this.timeEnd = Date.now();
