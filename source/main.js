@@ -265,10 +265,6 @@ Coin.prototype = {
   setConfig: function(config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
-  create: function() {
-    this.element = document.createElement('DIV');
-    this.config.prepareElement(this.element);
-  },
   destroy: function() {
     if (Util.isHTMLElement(this.element) === true) this.element.remove();
   },
@@ -318,6 +314,7 @@ const COIN_MANAGER_DEFAULT_CONFIG = {
   amount: 500,
   increment: 10,
   maxNumberOfCoins: 'infinite',
+  imageURL: './coin.svg',
 
   timingFunction: function(t) { return t * t * t },
 
@@ -347,20 +344,53 @@ const CoinManager = function(config) {
 };
 
 CoinManager.prototype = {
+  // 1) Initialize everything.
   init: function(config) {
     this.config = Util.objectAssign({}, COIN_MANAGER_DEFAULT_CONFIG);
     this.setConfig(config);
 
+    this.animation = new Animation({
+      duration: 'infinite',
+
+    });
     this.isActive = false;
     this.startVector;
     this.endVector;
     this.coins = [];
     this.endCount = 0;
+    this.canvasElement;
+    this.ctx;
   },
+  // 2) Set config.
   setConfig: function(config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
+  // 3) Trigger Start.
   start: function() {
+    this.createCanvas(this.begin.bind(this));
+  },
+  // 4) Create canvas element. Takes in a callback (begin method).
+  createCanvas: function(callback) {
+    if (typeof this.canvasElement === 'undefined') {
+      this.canvasElement = document.createElement('CANVAS');
+      this.canvasElement.style.width = '100vw';
+      this.canvasElement.style.maxWidth = '100%';
+      this.canvasElement.style.height = '100vw';
+      this.canvasElement.style.maxHeight = '100%';
+      this.canvasElement.style.position = 'absolute';
+      this.canvasElement.style.left = '0';
+      this.canvasElement.style.top = '0';
+      this.ctx = canvasElement.getContext('2d');
+      var img = new Image();
+      img.onLoad = function() {
+        this.config.parentElement.appendChild(this.canvasElement);
+        this.callback();
+      }
+      img.src = this.config.imgURL;
+    }
+  },
+  // 5) This is called after canvasElement is defined.
+  begin: function() {
     if (this.isActive === false) {
       this.getTargetVectors();
       this.populate();
@@ -447,11 +477,6 @@ CoinManager.prototype = {
 
       curveStartAngle: curveStartAngle,
       curveEndAngle:   curveEndAngle,
-
-      prepareElement: function(element) {
-        element.classList.add(this.config.coinClassName);
-        this.config.parentElement.appendChild(element);
-      }.bind(this),
 
       beforeStart: this.config.onCoinStart,
       onComplete: this.config.onCoinComplete,
