@@ -81,24 +81,39 @@ Vector2.prototype = {
   clone: function() {
     return new Vector2(this.x, this.y);
   },
-  add: function(x, y) {
-    this.x += x;
-    this.y += y;
+  add: function(by) {
+    if (typeof by === 'object') {
+      this.x += by.x;
+      this.y += by.y;
+    } else if (typeof by === 'number') {
+      this.x += by;
+      this.y += by;
+    }
     return this;
   },
-  subtract: function(x, y) {
-    this.x -= x;
-    this.y -= y;
+  subtract: function(by) {
+    if (typeof by === 'object') {
+      this.x -= by.x;
+      this.y -= by.y;
+    } else if (typeof by === 'number') {
+      this.x -= by;
+      this.y -= by;
+    }
     return this;
   },
-  multiply: function(x, y) {
-    this.x *= x;
-    this.y *= y;
+  multiply: function(by) {
+    this.x *= by;
+    this.y *= by;
     return this;
   },
-  divide: function(x, y) {
-    this.x /= x;
-    this.y /= y;
+  divide: function(by) {
+    this.x /= by;
+    this.y /= by;
+    return this;
+  },
+  limit: function(by) {
+    if (this.magnitude() > by)
+      this.normalize().multiply(by, by);
     return this;
   },
   magnitude: function() {
@@ -384,11 +399,11 @@ CoinManager.prototype = {
   },
   // 5) Set starting and ending vectors from config elements.
   getTargetVectors: function() {
-    this.startVector = this.getTargetVectorFromElement(this.config.startElement);
-    this.endVector   = this.getTargetVectorFromElement(this.config.endElement);
+    this.startVector = this.getElementCenterVector(this.config.startElement);
+    this.endVector   = this.getElementCenterVector(this.config.endElement);
   },
   // 6) Helper function to get center vector of element.
-  getTargetVectorFromElement: function(element) {
+  getElementCenterVector: function(element) {
     var rect = element.getBoundingClientRect();
     return new Vector2(
       rect.left + (rect.width  / 2),
@@ -421,14 +436,14 @@ CoinManager.prototype = {
     }
     // Loop through number of coins and populate points array.
     for (var i = 0; i < numberOfCoins; i++) {
-      var config = this.getCoinConfig()
+      var config = this.generateCoinConfig()
       config.amount = amount;
       if (i === numberOfCoins - 1 && remainder > 0) config.amount = remainder;
       this.coins.push(new Coin(this, config));
     }
   },
   // 8) This factory function generates config for each coin object.
-  getCoinConfig: function() {
+  generateCoinConfig: function() {
     var curveStartAngle, curveEndAngle;
     if (this.config.noSCurve === false) {
       curveStartAngle = Util.modulate(Math.random(), 1, [-this.config.maxAngleIntensity, this.config.maxAngleIntensity]);
@@ -598,6 +613,6 @@ var coinManager = new CoinManager({
   },
 });
 
-startElement.addEventListener('click', () => {
+startElement.addEventListener('click', function() {
   coinManager.start();
 });
