@@ -107,6 +107,7 @@ Vector2.prototype = {
     return this;
   },
   divide: function(by) {
+    if (by === 0) by = 1;
     this.x /= by;
     this.y /= by;
     return this;
@@ -255,17 +256,16 @@ var COIN_DEFAULT_CONFIG = {
   onComplete: function() {},
 };
 
-var Coin = function(manager, config) {
-  this.init(manager, config);
+var Coin = function(config) {
+  this.init(config);
 };
 
 Coin.prototype = {
   // 1) Initialize properties and set config.
-  init: function(manager, config) {
+  init: function(config) {
     this.config = Util.objectAssign({}, COIN_DEFAULT_CONFIG);
     this.setConfig(config);
 
-    this.manager = manager;
     this.animation = new Animation();
     this.isActive = false;
 
@@ -314,7 +314,6 @@ Coin.prototype = {
   end: function() {
     this.isActive = false;
     this.config.onComplete(this);
-    this.manager.onCoinEnd();
   },
 }
 
@@ -439,7 +438,7 @@ CoinManager.prototype = {
       var config = this.generateCoinConfig()
       config.amount = amount;
       if (i === numberOfCoins - 1 && remainder > 0) config.amount = remainder;
-      this.coins.push(new Coin(this, config));
+      this.coins.push(new Coin(config));
     }
   },
   // 8) This factory function generates config for each coin object.
@@ -531,6 +530,7 @@ CoinManager.prototype = {
   update: function() {
     this.clearCanvas();
     var m = this.config.resolutionMultiplier;
+    var completedCoins = 0;
     for (var i = 0; i < this.coins.length; i++) {
       if (this.coins[i].isActive === true) {
         this.context.drawImage(
@@ -540,21 +540,19 @@ CoinManager.prototype = {
           this.config.coinSize * m,
           this.config.coinSize * m
         );
+      } else {
+        completedCoins++;
       }
     }
+    if (completedCoins === this.coins.length) this.end();
   },
   // 13) Helper function to clear canvas every frame.
   clearCanvas: function() {
     this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
   },
-  // 14) This is called everytime a coin has completed its journey.
-  onCoinEnd: function() {
-    this.clearCanvas();
-    this.endCount++;
-    if (this.endCount === this.coins.length) this.end();
-  },
   // 15) This is called after the last coin reached the end. Or if numberOfCoins is 0. Sayonara!
   end: function() {
+    this.clearCanvas();
     this.animation.stop();
     this.canvasElement.remove();
     this.canvasElement = undefined;
