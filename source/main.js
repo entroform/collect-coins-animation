@@ -27,7 +27,7 @@ var Util = {
   lerp: function(from, to, t) {
     return (1 - t) * from + t * to;
   },
-  modulate(number, from, to) {
+  modulate: function(number, from, to) {
     if (typeof from === 'number') from = [0, from];
     if (typeof to === 'number') to = [0, to];
     var percent = (number - from[0]) / (from[1] - from[0]);
@@ -39,11 +39,11 @@ var Util = {
     }
     return result;
   },
-  getEuclideanDistance(a, b) {
+  getEuclideanDistance: function(a, b) {
     if (a === b) return 0;
     return Math.sqrt(Math.abs((a - b) * (b - a)));
   },
-  cycleNumber(number, range) {
+  cycleNumber: function(number, range) {
     if (typeof range === 'number') range = [0, range];
     var max = Math.max(range[0], range[1]);
     var min = Math.min(range[0], range[1]);
