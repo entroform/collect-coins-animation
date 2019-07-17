@@ -1,18 +1,22 @@
 {
-  "name": "points_path",
+  "name": "collect-coins-animation",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "author": "Andrew Prasetya",
+  "keywords": [],
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nekobird/collect-coins-animation.git"
+  },
+  "main": "source/main.js",
   "scripts": {
     "start": "parcel ./source/index.html",
-    "build": "rm -rf ./docs; parcel build ./source/index.html --out-dir docs --public-url ./",
+    "build": "rm -r ./docs; parcel build ./source/index.html --out-dir docs --public-url ./",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "cssnano": "^4.1.10",
-    "sass": "^1.22.3"
+    "sass": "^1.22.5"
   }
 }
