@@ -1,6 +1,5 @@
 import Util from './util';
 
-// @Vector2
 var Vector2 = function(x, y) {
   this.init(x, y);
 };
@@ -76,10 +75,22 @@ Vector2.prototype = {
   getAngleTo: function(to) {
     return Vector2.subtract(to, this).getAngle();
   },
+  rotateBy: function(by) {
+    var angle = this.getAngle() + by;
+    var magnitude = this.magnitude();
+    this.x = Math.cos(angle) * magnitude;
+    this.y = Math.sin(angle) * magnitude;
+    return this;
+  },
+  rotateTo: function(angle) {
+    var angle = Util.cycleNumber(angle, Math.PI * 2);
+    var magnitude = this.magnitude();
+    this.x = Math.cos(angle) * magnitude;
+    this.y = Math.sin(angle) * magnitude;
+    return this;
+  },
   getDistanceTo: function(to) {
-    return Vector2
-      .subtract(this, to)
-      .magnitude();
+    return Vector2.subtract(this, to).magnitude();
   },
 };
 

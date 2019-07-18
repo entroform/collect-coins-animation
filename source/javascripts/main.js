@@ -2,8 +2,6 @@ import Util from './util';
 import Vector2 from './vector2';
 import Animation from './animation';
 
-console.log(Util);
-
 // @Coin
 var COIN_DEFAULT_CONFIG = {
   // Animation
@@ -284,16 +282,15 @@ CoinManager.prototype = {
   startAnimation: function() {
     this.animation = new Animation({
       delay: this.config.delay,
-      duration: 'infinite',
+      duration: 'forever',
       timingFunction: function(t) { return t },
       onStart: function() {
         this.config.beforeStart(this);
       }.bind(this),
       onTick: this.update.bind(this),
     });
-    for (var i = 0; i < this.coins.length; i++) {
+    for (var i = 0; i < this.coins.length; i++)
       this.coins[i].start();
-    }
     this.animation.play();
   },
   // 12) Loop through each coins and draw them.

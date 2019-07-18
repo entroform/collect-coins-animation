@@ -1,8 +1,9 @@
 import Util from './util';
 
-// @Animation
 var ANIMATION_DEFAULT_CONFIG = {
-  duration: 1000, // In ms
+  // animation duration in ms, you can set it to 'forever'
+  // if you want it to run until stop is called.
+  duration: 1000,
   delay: 0,
   timingFunction: function(t) { return t },
   onTick: function() {},
@@ -18,33 +19,36 @@ Animation.prototype = {
   init: function(config) {
     this.config = Util.objectAssign({}, ANIMATION_DEFAULT_CONFIG);
     this.setConfig(config);
+
     this.rafID;
     this.timeoutID;
-    this.timeStart = 0;
-    this.timeEnd = 0;
+
     this.isActive = false;
     this.isAnimating = false;
+
+    this.timeStart = 0;
+    this.timeEnd = 0;
+
     this.progress = 0;
   },
   setConfig: function(config) {
-    if (typeof config === 'object')
-      Util.objectAssign(this.config, config);
+    if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
   updateProgress: function() {
     if (typeof this.config.duration === 'number') {
       var now = Date.now();
       this.progress = (now - this.timeStart) / this.config.duration;
       if (this.progress > 1) this.progress = 1;
-    } else {
+    } else if (this.config.duration === 'forever') {
       this.progress = 0;
+    } else {
+      this.progress = 1;
     }
   },
   loop: function() {
     if (this.isAnimating === true) {
       this.updateProgress();
-      this.config.onTick(
-        this.config.timingFunction(this.progress)
-      );
+      this.config.onTick(this.config.timingFunction(this.progress));
       if (this.progress < 1) {
         this.continueLoop();
       } else {
@@ -55,9 +59,7 @@ Animation.prototype = {
   continueLoop: function() {
     if (this.isAnimating === true) {
       window.cancelAnimationFrame(this.rafID);
-      this.rafID = window.requestAnimationFrame(
-        this.loop.bind(this)
-      );
+      this.rafID = window.requestAnimationFrame(this.loop.bind(this));
     }
   },
   play: function() {
@@ -78,8 +80,8 @@ Animation.prototype = {
       this.isAnimating = false;
       this.isActive = false;
       this.timeEnd = Date.now();
-      this.config.onComplete(this);
       this.progress = 0;
+      this.config.onComplete(this);
     }
   },
 }
