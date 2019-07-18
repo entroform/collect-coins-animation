@@ -13,7 +13,7 @@ var coinManager = new CoinManager({
   parentElement: containerElement,
 
   canvasMargin: 100,
-  resolutionMultiplier: 1,
+  resolutionMultiplier: 2,
   zIndex: 1000,
 
   imagePath: coinsvg,

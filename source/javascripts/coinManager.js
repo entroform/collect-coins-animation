@@ -29,7 +29,7 @@ var COIN_MANAGER_DEFAULT_CONFIG = {
   durationRange: [600, 1000],
   arcIntensityRange: [0, 0.5],
   arcAngleIntensity: Math.PI / 4,
-  noSCurve: false,
+  noSCurve: true,
 
   // Hooks.
   beforeCoinStart: function() {},
