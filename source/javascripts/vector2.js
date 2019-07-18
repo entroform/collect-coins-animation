@@ -95,7 +95,7 @@ Vector2.prototype = {
 };
 
 Vector2.subtract = function (a, b) {
-  return new Vector2().equals(a).subtract(b.x, b.y);
+  return new Vector2().equals(a).subtract(b);
 };
 
 export default Vector2;

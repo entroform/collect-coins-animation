@@ -47,8 +47,13 @@ Coin.prototype = {
     this.value = this.config.value;
 
     this.position = new Vector2().equals(this.config.startVector);
-    this.controlPoint1 = this.getControlPointVector(this.config.startVector, this.config.endVector, this.config.curveStartIntensity, this.config.curveStartAngle);
-    this.controlPoint2 = this.getControlPointVector(this.config.endVector, this.config.startVector, this.config.curveEndIntensity, this.config.curveEndAngle);
+    
+    this.controlPoint1 = this.getControlPointVector(
+      this.config.startVector, this.config.endVector, this.config.curveStartIntensity, this.config.curveStartAngle
+    );
+    this.controlPoint2 = this.getControlPointVector(
+      this.config.endVector, this.config.startVector, this.config.curveEndIntensity, this.config.curveEndAngle
+    );
   },
   // 2) Set coin config.
   setConfig: function (config) {
@@ -59,7 +64,8 @@ Coin.prototype = {
     var distance = from.getDistanceTo(to);
     var length = distance * intensity;
     var angle = Util.cycleNumber(
-      from.getAngleTo(to) + angleOffset, Math.PI * 2
+      from.getAngleTo(to) + angleOffset,
+      Math.PI * 2
     );
     return new Vector2(
       from.x + Math.cos(angle) * length,
