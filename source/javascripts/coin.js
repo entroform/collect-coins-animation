@@ -9,7 +9,9 @@ var COIN_DEFAULT_CONFIG = {
   // Animation Settings.
   delay: 0,
   duration: 400,
-  timingFunction: function(t) { return t * t * t; },
+  timingFunction: function (t) {
+    return t * t * t;
+  },
 
   // Start and End Vectors.
   startVector: new Vector2(),
@@ -23,18 +25,18 @@ var COIN_DEFAULT_CONFIG = {
   curveEndAngle: 0,
 
   // Hooks
-  beforeStart: function() {},
-  onStart: function() {},
-  onComplete: function() {},
+  beforeStart: function () {},
+  onStart: function () {},
+  onComplete: function () {},
 };
 
-var Coin = function(config) {
+var Coin = function (config) {
   this.init(config);
 };
 
 Coin.prototype = {
   // 1) Initialize properties and set config.
-  init: function(config) {
+  init: function (config) {
     this.config = Util.objectAssign({}, COIN_DEFAULT_CONFIG);
     this.setConfig(config);
 
@@ -45,15 +47,15 @@ Coin.prototype = {
     this.value = this.config.value;
 
     this.position = new Vector2().equals(this.config.startVector);
-    this.controlPoint1 = this.getControlPointVector(this.config.startVector, this.config.endVector,   this.config.curveStartIntensity, this.config.curveStartAngle);
-    this.controlPoint2 = this.getControlPointVector(this.config.endVector,   this.config.startVector, this.config.curveEndIntensity,   this.config.curveEndAngle);
+    this.controlPoint1 = this.getControlPointVector(this.config.startVector, this.config.endVector, this.config.curveStartIntensity, this.config.curveStartAngle);
+    this.controlPoint2 = this.getControlPointVector(this.config.endVector, this.config.startVector, this.config.curveEndIntensity, this.config.curveEndAngle);
   },
   // 2) Set coin config.
-  setConfig: function(config) {
+  setConfig: function (config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
   // 3) Helper function to calculate control point vectors.
-  getControlPointVector: function(from, to, intensity, angleOffset) {
+  getControlPointVector: function (from, to, intensity, angleOffset) {
     var distance = from.getDistanceTo(to);
     var length = distance * intensity;
     var angle = Util.cycleNumber(
@@ -65,14 +67,14 @@ Coin.prototype = {
     );
   },
   // 4) Start here.
-  start: function() {
+  start: function () {
     this.isActive = true;
     this.config.beforeStart(this);
     this.animation.setConfig({
       delay: this.config.delay,
       duration: this.config.duration,
       timingFunction: this.config.timingFunction,
-      onStart: function() {
+      onStart: function () {
         this.isMoving = true;
         this.config.onStart(this);
       }.bind(this),
@@ -82,11 +84,11 @@ Coin.prototype = {
     this.animation.play();
   },
   // 5) Update position by applying cubic bezier.
-  update: function(t) {
+  update: function (t) {
     this.position.applyCubicBezier(t, this.config.startVector, this.controlPoint1, this.controlPoint2, this.config.endVector);
   },
   // 6) This is called once animation is completed.
-  end: function() {
+  end: function () {
     this.isMoving = false;
     this.isActive = false;
     this.config.onComplete(this);

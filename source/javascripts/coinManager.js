@@ -24,7 +24,9 @@ var COIN_MANAGER_DEFAULT_CONFIG = {
   numberOfCoinsRange: [0, 300],
 
   // Coin Trajectory Settings.
-  timingFunction: function(t) { return t; },
+  timingFunction: function (t) {
+    return t;
+  },
   delayRange: [0, 0],
   durationRange: [600, 1000],
   arcIntensityRange: [0, 0.5],
@@ -32,21 +34,21 @@ var COIN_MANAGER_DEFAULT_CONFIG = {
   noSCurve: true,
 
   // Hooks.
-  beforeCoinStart: function() {},
-  onCoinStart: function(coin) {},
-  onCoinComplete: function(coin) {},
+  beforeCoinStart: function () {},
+  onCoinStart: function (coin) {},
+  onCoinComplete: function (coin) {},
 
-  onStart: function() {},
-  onComplete: function() {},
+  onStart: function () {},
+  onComplete: function () {},
 };
 
-var CoinManager = function(config) {
+var CoinManager = function (config) {
   this.init(config);
 };
 
 CoinManager.prototype = {
   // 1) Initialize properties and stuff.
-  init: function(config) {
+  init: function (config) {
     this.config = Util.objectAssign({}, COIN_MANAGER_DEFAULT_CONFIG);
     this.setConfig(config);
 
@@ -64,15 +66,15 @@ CoinManager.prototype = {
     this.offsetRight;
   },
   // 2) Set config.
-  setConfig: function(config) {
+  setConfig: function (config) {
     if (typeof config === 'object') Util.objectAssign(this.config, config);
   },
   // 3) Trigger Start.
-  start: function() {
+  start: function () {
     this.setup(this.begin.bind(this));
   },
   // 4) Setup target vectors, initialize coin objects, and create canvas.
-  setup: function(callback) {
+  setup: function (callback) {
     if (this.isActive === false) {
       this.isActive = true;
       this.getTargetVectors();
@@ -81,20 +83,20 @@ CoinManager.prototype = {
     }
   },
   // 5) Set starting and ending vectors from config elements.
-  getTargetVectors: function() {
+  getTargetVectors: function () {
     this.startVector = this.getElementCenterVector(this.config.startElement);
-    this.endVector   = this.getElementCenterVector(this.config.endElement);
+    this.endVector = this.getElementCenterVector(this.config.endElement);
   },
   // 6) Helper function to get center vector of element.
-  getElementCenterVector: function(element) {
+  getElementCenterVector: function (element) {
     var rect = element.getBoundingClientRect();
     return new Vector2(
-      rect.left + (rect.width  / 2),
-      rect.top  + (rect.height / 2),
+      rect.left + (rect.width / 2),
+      rect.top + (rect.height / 2),
     );
   },
   // 7) Prepare, calculate, and initialize coin objects.
-  populate: function() {
+  populate: function () {
     this.coins = [];
 
     var coinValue = 0;
@@ -108,9 +110,9 @@ CoinManager.prototype = {
     if (maxNumberOfCoins < 0) maxNumberOfCoins = 0;
 
     if (
-      this.config.totalValue === 0
-      || this.config.valueIncrement === 0
-      || this.config.valueIncrement >= this.config.totalValue
+      this.config.totalValue === 0 ||
+      this.config.valueIncrement === 0 ||
+      this.config.valueIncrement >= this.config.totalValue
     ) {
       numberOfCoins = minNumberOfCoins;
 
@@ -162,13 +164,13 @@ CoinManager.prototype = {
         if (i === numberOfCoins - 1 && coinValueRemainder > 0)
           config.value += coinValueRemainder;
       }
-      
+
       this.coins.push(new Coin(config));
       loopCount++;
     }
   },
   // 8) This factory function generates config for each coin object.
-  generateCoinConfig: function() {
+  generateCoinConfig: function () {
     var curveStartAngle, curveEndAngle;
 
     if (this.config.noSCurve === false) {
@@ -177,7 +179,7 @@ CoinManager.prototype = {
     } else {
       var curve = Util.modulate(Math.random(), 1, [-this.config.arcAngleIntensity, this.config.arcAngleIntensity]);
       curveStartAngle = curve;
-      curveEndAngle = - curve;
+      curveEndAngle = -curve;
     }
 
     return {
@@ -200,30 +202,30 @@ CoinManager.prototype = {
     }
   },
   // 9) Create canvas element and calculate offset. Takes in a callback (begin method).
-  createCanvas: function(callback) {
+  createCanvas: function (callback) {
     if (
-      this.isActive === true
-      && typeof this.canvasElement === 'undefined'
+      this.isActive === true &&
+      typeof this.canvasElement === 'undefined'
     ) {
       this.offsetLeft = Math.min(this.startVector.x, this.endVector.x) - this.config.canvasMargin;
-      this.offsetTop  = Math.min(this.startVector.y, this.endVector.y) - this.config.canvasMargin;
-      var right  = Math.max(this.startVector.x, this.endVector.x);
+      this.offsetTop = Math.min(this.startVector.y, this.endVector.y) - this.config.canvasMargin;
+      var right = Math.max(this.startVector.x, this.endVector.x);
       var bottom = Math.max(this.startVector.y, this.endVector.y);
-      var width  = right - this.offsetLeft + this.config.canvasMargin * 2;
+      var width = right - this.offsetLeft + this.config.canvasMargin * 2;
       var height = bottom - this.offsetTop + this.config.canvasMargin * 2;
 
       this.canvasElement = document.createElement('CANVAS');
-      this.canvasElement.style.position  = 'absolute';
-      this.canvasElement.style.zIndex    = this.config.zIndex.toString();
-      this.canvasElement.style.left      = this.offsetLeft.toString() + 'px';
-      this.canvasElement.style.top       = this.offsetTop.toString()  + 'px';
-      this.canvasElement.style.width     = width.toString()  + 'px';
-      this.canvasElement.style.height    = height.toString() + 'px';
-      this.canvasElement.width  = width  * this.config.resolutionMultiplier;
+      this.canvasElement.style.position = 'absolute';
+      this.canvasElement.style.zIndex = this.config.zIndex.toString();
+      this.canvasElement.style.left = this.offsetLeft.toString() + 'px';
+      this.canvasElement.style.top = this.offsetTop.toString() + 'px';
+      this.canvasElement.style.width = width.toString() + 'px';
+      this.canvasElement.style.height = height.toString() + 'px';
+      this.canvasElement.width = width * this.config.resolutionMultiplier;
       this.canvasElement.height = height * this.config.resolutionMultiplier;
       this.context = this.canvasElement.getContext('2d');
       this.image = new Image();
-      this.image.onload = function() {
+      this.image.onload = function () {
         this.config.parentElement.appendChild(this.canvasElement);
         callback();
       }.bind(this);
@@ -231,18 +233,20 @@ CoinManager.prototype = {
     }
   },
   // 10) This is called once canvasElement is defined and is in the DOM. Start animation!
-  begin: function() {
+  begin: function () {
     if (this.isActive === true) {
       this.startAnimation();
       if (this.coins.length === 0) this.end();
     }
   },
   // 11) Initialize animation object and start it.
-  startAnimation: function() {
+  startAnimation: function () {
     this.animation = new Animation({
       duration: 'forever',
-      timingFunction: function(t) { return t },
-      onStart: function() {
+      timingFunction: function (t) {
+        return t
+      },
+      onStart: function () {
         this.config.onStart(this);
       }.bind(this),
       onTick: this.update.bind(this),
@@ -252,7 +256,7 @@ CoinManager.prototype = {
     this.animation.play();
   },
   // 12) Loop through each coins and draw them.
-  update: function() {
+  update: function () {
     this.clearCanvas();
     var m = this.config.resolutionMultiplier;
     var completedCoins = 0;
@@ -262,7 +266,7 @@ CoinManager.prototype = {
           this.context.drawImage(
             this.image,
             (this.coins[i].position.x - this.offsetLeft - (this.config.coinSize / 2)) * m,
-            (this.coins[i].position.y - this.offsetTop  - (this.config.coinSize / 2)) * m,
+            (this.coins[i].position.y - this.offsetTop - (this.config.coinSize / 2)) * m,
             this.config.coinSize * m,
             this.config.coinSize * m
           );
@@ -274,11 +278,11 @@ CoinManager.prototype = {
     if (completedCoins === this.coins.length) this.end();
   },
   // 13) Helper function to clear canvas every frame.
-  clearCanvas: function() {
+  clearCanvas: function () {
     this.context.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
   },
   // 15) This is called after the last coin reached the end. Or if numberOfCoins is 0. Sayonara!
-  end: function() {
+  end: function () {
     this.clearCanvas();
     this.animation.stop();
     this.canvasElement.remove();

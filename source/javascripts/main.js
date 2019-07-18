@@ -22,7 +22,9 @@ var coinManager = new CoinManager({
   valueIncrement: 8,
   numberOfCoinsRange: [0, 300],
 
-  timingFunction: function(t) { return t; },
+  timingFunction: function (t) {
+    return t;
+  },
   delayRange: [0, 0],
   durationRange: [600, 1000],
 
@@ -30,23 +32,23 @@ var coinManager = new CoinManager({
   arcAngleIntensity: Math.PI / 4,
   noSCurve: true,
 
-  onCoinComplete: function(coin) {
+  onCoinComplete: function (coin) {
     endElement.classList.remove('coinTarget--animate');
     endElement.classList.add('coinTarget--animate');
     coinsValue.textContent = parseInt(coinsValue.textContent, 10) + coin.value;
   }.bind(this),
 
-  onStart: function() {
+  onStart: function () {
     startElement.classList.add('collectButton--disabled');
     startElement.textContent = 'Collecting...';
   },
-  onComplete: function() {
+  onComplete: function () {
     endElement.classList.remove('coinTarget--animate');
     startElement.classList.remove('collectButton--disabled');
     startElement.textContent = 'Collect';
   },
 });
 
-startElement.addEventListener('click', function() {
+startElement.addEventListener('click', function () {
   coinManager.start();
 });
