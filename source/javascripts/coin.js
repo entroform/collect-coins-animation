@@ -4,23 +4,27 @@ import Animation from './animation';
 
 // @Coin
 var COIN_DEFAULT_CONFIG = {
-  // Animation
-  delay: 1000,
-  duration: 1000,
+  value: 0,
+
+  // Animation Settings.
+  delay: 0,
+  duration: 400,
   timingFunction: function(t) { return t * t * t; },
 
-  // Vectors
+  // Start and End Vectors.
   startVector: new Vector2(),
   endVector: new Vector2(),
 
+  // Trajectory Settings.
   // 0 -> 1
   curveStartIntensity: 0.5,
   curveEndIntensity: 0.5,
-
   curveStartAngle: 0,
   curveEndAngle: 0,
 
+  // Hooks
   beforeStart: function() {},
+  onStart: function() {},
   onComplete: function() {},
 };
 
@@ -36,8 +40,10 @@ Coin.prototype = {
 
     this.animation = new Animation();
     this.isActive = false;
+    this.isMoving = false;
 
-    this.amount = this.config.amount;
+    this.value = this.config.value;
+
     this.position = new Vector2().equals(this.config.startVector);
     this.controlPoint1 = this.getControlPointVector(this.config.startVector, this.config.endVector,   this.config.curveStartIntensity, this.config.curveStartAngle);
     this.controlPoint2 = this.getControlPointVector(this.config.endVector,   this.config.startVector, this.config.curveEndIntensity,   this.config.curveEndAngle);
@@ -60,26 +66,28 @@ Coin.prototype = {
   },
   // 4) Start here.
   start: function() {
-    this.animation.stop();
+    this.isActive = true;
+    this.config.beforeStart(this);
     this.animation.setConfig({
       delay: this.config.delay,
       duration: this.config.duration,
       timingFunction: this.config.timingFunction,
       onStart: function() {
-        this.config.beforeStart(this);
-        this.isActive = true;
+        this.isMoving = true;
+        this.config.onStart(this);
       }.bind(this),
-      onTick: this.tick.bind(this),
+      onTick: this.update.bind(this),
       onComplete: this.end.bind(this),
     });
     this.animation.play();
   },
-  // 5)
-  tick: function(t) {
+  // 5) Update position by applying cubic bezier.
+  update: function(t) {
     this.position.applyCubicBezier(t, this.config.startVector, this.controlPoint1, this.controlPoint2, this.config.endVector);
   },
   // 6) This is called once animation is completed.
   end: function() {
+    this.isMoving = false;
     this.isActive = false;
     this.config.onComplete(this);
   },

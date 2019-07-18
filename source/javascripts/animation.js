@@ -1,12 +1,17 @@
 import Util from './util';
 
 var ANIMATION_DEFAULT_CONFIG = {
-  // animation duration in ms, you can set it to 'forever'
-  // if you want it to run until stop is called.
+  // Animation duration is in ms.
+  // You can also set it to 'forever'
+  // if you want it to run indefinitely until
+  // stop() is called.
   duration: 1000,
   delay: 0,
   timingFunction: function(t) { return t },
+
+  // Hooks.
   onTick: function() {},
+  beforeStart: function() {},
   onStart: function() {},
   onComplete: function() {},
 };
@@ -65,6 +70,7 @@ Animation.prototype = {
   play: function() {
     if (this.isActive === false) {
       this.isActive = true;
+      this.config.beforeStart(this);
       this.timeoutID = setTimeout(function() {
         this.isAnimating = true;
         this.timeStart = Date.now();
@@ -77,10 +83,10 @@ Animation.prototype = {
     if (this.isActive === true) {
       window.cancelAnimationFrame(this.rafID);
       clearTimeout(this.timeoutID);
-      this.isAnimating = false;
-      this.isActive = false;
       this.timeEnd = Date.now();
       this.progress = 0;
+      this.isAnimating = false;
+      this.isActive = false;
       this.config.onComplete(this);
     }
   },

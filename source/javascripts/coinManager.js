@@ -9,29 +9,34 @@ var COIN_MANAGER_DEFAULT_CONFIG = {
   endElement: null,
   parentElement: null,
 
+  // Canvas Settings.
   canvasMargin: 100,
   resolutionMultiplier: 1,
   zIndex: 0,
 
-  imageURL: '',
+  // Coin Settings.
+  imagePath: '',
   coinSize: 20,
-  amount: 1000,
-  increment: 20,
-  maxNumberOfCoins: 'infinite',
 
+  // Coin Value Distribution.
+  totalValue: 1000,
+  valueIncrement: 20,
+  numberOfCoinsRange: [0, 300],
+
+  // Coin Trajectory Settings.
   timingFunction: function(t) { return t; },
   delayRange: [0, 0],
   durationRange: [600, 1000],
-
-  arcLengthIntensityRange: [0, 0.5],
+  arcIntensityRange: [0, 0.5],
   arcAngleIntensity: Math.PI / 4,
-
   noSCurve: false,
 
+  // Hooks.
+  beforeCoinStart: function() {},
   onCoinStart: function(coin) {},
   onCoinComplete: function(coin) {},
 
-  beforeStart: function() {},
+  onStart: function() {},
   onComplete: function() {},
 };
 
@@ -91,38 +96,81 @@ CoinManager.prototype = {
   // 7) Prepare, calculate, and initialize coin objects.
   populate: function() {
     this.coins = [];
-    var amount = this.config.increment, remainder = 0, numberOfCoins = 0;
 
-    // Calculate number of coins and remainder.
-    if (this.config.increment > 0 && this.config.amount > 0) {
-      remainder = this.config.amount % this.config.increment;
-      var difference = this.config.amount - remainder;
-      numberOfCoins = (difference === 0) ? 1 : difference / this.config.increment;
-    }
+    var coinValue = 0;
+    var coinValueCount = 0;
+    var coinValueRemainder = null;
+    var numberOfCoins = 0;
+
+    var minNumberOfCoins = Math.min.apply(null, this.config.numberOfCoinsRange);
+    var maxNumberOfCoins = Math.max.apply(null, this.config.numberOfCoinsRange);
+    if (minNumberOfCoins < 0) minNumberOfCoins = 0;
+    if (maxNumberOfCoins < 0) maxNumberOfCoins = 0;
 
     if (
-      typeof this.config.maxNumberOfCoins === 'number'
-      && numberOfCoins > this.config.maxNumberOfCoins
+      this.config.totalValue === 0
+      || this.config.valueIncrement === 0
+      || this.config.valueIncrement >= this.config.totalValue
     ) {
-      if (this.config.maxNumberOfCoins <= 0) {
-        numberOfCoins = 0;
+      numberOfCoins = minNumberOfCoins;
+
+      if (this.config.totalValue !== 0) {
+        if (this.config.totalValue <= numberOfCoins) {
+          coinValueCount = this.config.totalValue;
+          coinValue = 1;
+        } else {
+          coinValueRemainder = this.config.totalValue % numberOfCoins;
+          coinValue = (this.config.totalValue - coinValueRemainder) / numberOfCoins;
+        }
+      }
+    } else {
+      var remainder = this.config.totalValue % this.config.valueIncrement;
+
+      if (remainder === 0) {
+        numberOfCoins = this.config.totalValue / this.config.valueIncrement;
       } else {
-        numberOfCoins = this.config.maxNumberOfCoins;
-        remainder = this.config.amount % numberOfCoins;
-        amount = (this.config.amount - remainder) / numberOfCoins;
+        numberOfCoins = (this.config.totalValue - remainder) / this.config.valueIncrement;
+      }
+
+      if (numberOfCoins < minNumberOfCoins) numberOfCoins = minNumberOfCoins;
+      if (numberOfCoins > maxNumberOfCoins) numberOfCoins = maxNumberOfCoins;
+
+      if (this.config.totalValue <= numberOfCoins) {
+        coinValueCount = this.config.totalValue;
+        coinValue = 1;
+      } else {
+        if (this.config.totalValue % numberOfCoins === 0) {
+          coinValueRemainder = 0;
+          coinValue = this.config.totalValue / numberOfCoins;
+        } else {
+          coinValueRemainder = this.config.totalValue % numberOfCoins;
+          coinValue = (this.config.totalValue - coinValueRemainder) / numberOfCoins;
+        }
       }
     }
+
     // Loop through number of coins and populate points array.
+    var loopCount = 0;
     for (var i = 0; i < numberOfCoins; i++) {
+
       var config = this.generateCoinConfig()
-      config.amount = amount;
-      if (i === numberOfCoins - 1 && remainder > 0) config.amount = remainder;
+
+      if (coinValueRemainder === null) {
+        config.value = (loopCount < coinValueCount) ? coinValue : 0;
+      } else {
+        config.value = coinValue;
+        if (i === numberOfCoins - 1 && coinValueRemainder > 0)
+          config.value += coinValueRemainder;
+      }
+      
       this.coins.push(new Coin(config));
+      loopCount++;
     }
   },
   // 8) This factory function generates config for each coin object.
   generateCoinConfig: function() {
     var curveStartAngle, curveEndAngle;
+
     if (this.config.noSCurve === false) {
       curveStartAngle = Util.modulate(Math.random(), 1, [-this.config.arcAngleIntensity, this.config.arcAngleIntensity]);
       curveEndAngle = Util.modulate(Math.random(), 1, [-this.config.arcAngleIntensity, this.config.arcAngleIntensity]);
@@ -134,19 +182,20 @@ CoinManager.prototype = {
 
     return {
       startVector: this.startVector,
-      endVector:   this.endVector,
+      endVector: this.endVector,
 
       timingFunction: this.config.timingFunction,
 
-      delay:               Util.modulate(Math.random(), 1, this.config.delayRange),
-      duration:            Util.modulate(Math.random(), 1, this.config.durationRange),
-      curveStartIntensity: Util.modulate(Math.random(), 1, this.config.arcLengthIntensityRange),
-      curveEndIntensity:   Util.modulate(Math.random(), 1, this.config.arcLengthIntensityRange),
+      delay: Util.modulate(Math.random(), 1, this.config.delayRange),
+      duration: Util.modulate(Math.random(), 1, this.config.durationRange),
+      curveStartIntensity: Util.modulate(Math.random(), 1, this.config.arcIntensityRange),
+      curveEndIntensity: Util.modulate(Math.random(), 1, this.config.arcIntensityRange),
 
       curveStartAngle: curveStartAngle,
-      curveEndAngle:   curveEndAngle,
+      curveEndAngle: curveEndAngle,
 
-      beforeStart: this.config.onCoinStart,
+      beforeStart: this.config.beforeCoinStart,
+      onStart: this.config.onCoinStart,
       onComplete: this.config.onCoinComplete,
     }
   },
@@ -178,13 +227,12 @@ CoinManager.prototype = {
         this.config.parentElement.appendChild(this.canvasElement);
         callback();
       }.bind(this);
-      this.image.src = this.config.imageURL;
+      this.image.src = this.config.imagePath;
     }
   },
   // 10) This is called once canvasElement is defined and is in the DOM. Start animation!
   begin: function() {
     if (this.isActive === true) {
-      this.config.beforeStart();
       this.startAnimation();
       if (this.coins.length === 0) this.end();
     }
@@ -192,11 +240,10 @@ CoinManager.prototype = {
   // 11) Initialize animation object and start it.
   startAnimation: function() {
     this.animation = new Animation({
-      delay: this.config.delay,
       duration: 'forever',
       timingFunction: function(t) { return t },
       onStart: function() {
-        this.config.beforeStart(this);
+        this.config.onStart(this);
       }.bind(this),
       onTick: this.update.bind(this),
     });
@@ -211,13 +258,15 @@ CoinManager.prototype = {
     var completedCoins = 0;
     for (var i = 0; i < this.coins.length; i++) {
       if (this.coins[i].isActive === true) {
-        this.context.drawImage(
-          this.image,
-          (this.coins[i].position.x - this.offsetLeft - (this.config.coinSize / 2)) * m,
-          (this.coins[i].position.y - this.offsetTop  - (this.config.coinSize / 2)) * m,
-          this.config.coinSize * m,
-          this.config.coinSize * m
-        );
+        if (this.coins[i].isMoving === true) {
+          this.context.drawImage(
+            this.image,
+            (this.coins[i].position.x - this.offsetLeft - (this.config.coinSize / 2)) * m,
+            (this.coins[i].position.y - this.offsetTop  - (this.config.coinSize / 2)) * m,
+            this.config.coinSize * m,
+            this.config.coinSize * m
+          );
+        }
       } else {
         completedCoins++;
       }
