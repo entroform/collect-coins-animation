@@ -13,6 +13,7 @@ var COIN_MANAGER_DEFAULT_CONFIG = {
   canvasMargin: 100,
   resolutionMultiplier: 1,
   zIndex: 0,
+  prepareCanvas: function () {},
 
   // Coin Settings.
   imagePath: '',
@@ -223,6 +224,9 @@ CoinManager.prototype = {
       this.canvasElement.style.height = height.toString() + 'px';
       this.canvasElement.width = width * this.config.resolutionMultiplier;
       this.canvasElement.height = height * this.config.resolutionMultiplier;
+
+      this.config.prepareCanvas(this.canvasElement, this);
+
       this.context = this.canvasElement.getContext('2d');
       this.image = new Image();
       this.image.onload = function () {
