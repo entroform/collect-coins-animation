@@ -7,10 +7,10 @@ var Util = {
   },
   isHTMLElement: function (element) {
     return (
-      typeof element === 'object' &&
-      typeof element.nodeType === 'number' &&
-      element.nodeType === 1 &&
-      element instanceof HTMLElement
+      typeof element === 'object'
+      && typeof element.nodeType === 'number'
+      && element.nodeType === 1
+      && element instanceof HTMLElement
     );
   },
   cubicBezier: function (t, p1, cp1, cp2, p2) {
@@ -19,8 +19,8 @@ var Util = {
   constrain(value, range) {
     if (typeof range === 'number') range = [0, range];
 
-    const max = Math.max(range[0], range[1]);
-    const min = Math.min(range[0], range[1]);
+    var max = Math.max(range[0], range[1]);
+    var min = Math.min(range[0], range[1]);
 
     if (value >= max) return max;
     else if (value <= min) return min;
@@ -84,8 +84,8 @@ var Util = {
       else
         return parseFloat(Math.random().toFixed(fixed));
     } else {
-      let number = this.modulate(Math.random(), 1, range, false);
-      return parseInt((number).toFixed(0), 10);
+      var number = this.modulate(Math.random(), 1, range, false);
+      return parseInt(number.toFixed(0), 10);
     }
   }
 };
