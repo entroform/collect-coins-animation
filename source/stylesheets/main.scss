@@ -5,6 +5,8 @@ $color_primary_hover: hsl(220, 100%, 40%);
 $color_primary_active: hsl(220, 100%, 20%);
 $color_primary_disabled: hsl(220, 50, 10%);
 
+$color_dark: hsl(220, 20%, 5%);
+
 html {
   font-family: 'Helvetica Neue', sans-serif;
   font-size: 18px;
@@ -12,11 +14,13 @@ html {
 
 .container {
   align-items: center;
-  background-color: hsl(220, 20%, 5%);
+  background-color: $color_dark;
   display: flex;
   height: 100vh;
   justify-content: center;
   max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
   position: relative;
   width: 100vw;
 }
