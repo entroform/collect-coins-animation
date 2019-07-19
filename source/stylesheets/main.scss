@@ -73,6 +73,7 @@ html {
   $_height: 50px;
   $_width: auto;
 
+  appearance: none;
   background-color: $color_primary;
   border-radius: $_height;
   box-sizing: border-box;
