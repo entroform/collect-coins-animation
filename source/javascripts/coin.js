@@ -91,7 +91,13 @@ Coin.prototype = {
   },
   // 5) Update position by applying cubic bezier.
   update: function (t) {
-    this.position.applyCubicBezier(t, this.config.startVector, this.controlPoint1, this.controlPoint2, this.config.endVector);
+    this.position.applyCubicBezier(
+      t,
+      this.config.startVector,
+      this.controlPoint1,
+      this.controlPoint2,
+      this.config.endVector
+    );
   },
   // 6) This is called once animation is completed.
   end: function () {

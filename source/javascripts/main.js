@@ -12,7 +12,8 @@ var coinManager = new CoinManager({
   endElement: endElement,
   parentElement: containerElement,
 
-  canvasMargin: 100,
+  clipCanvasOnOverflow: true,
+  canvasMargin: 500,
   resolutionMultiplier: 2,
   zIndex: 1000,
 

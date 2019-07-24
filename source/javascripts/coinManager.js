@@ -2,6 +2,7 @@ import Util from './util';
 import Vector2 from './vector2';
 import Animation from './animation';
 import Coin from './coin';
+import ViewportModel from './viewport';
 
 // @CoinManager
 var COIN_MANAGER_DEFAULT_CONFIG = {
@@ -10,10 +11,11 @@ var COIN_MANAGER_DEFAULT_CONFIG = {
   parentElement: null,
 
   // Canvas Settings.
+  clipCanvasOnOverflow: true,
   canvasMargin: 100,
   resolutionMultiplier: 1,
   zIndex: 0,
-  prepareCanvas: function () {},
+  prepareCanvas: function (canvasElement, coinManager) {},
 
   // Coin Settings.
   imagePath: '',
@@ -209,24 +211,42 @@ CoinManager.prototype = {
       typeof this.canvasElement === 'undefined'
     ) {
       this.offsetLeft = Math.min(this.startVector.x, this.endVector.x) - this.config.canvasMargin;
-      this.offsetTop = Math.min(this.startVector.y, this.endVector.y) - this.config.canvasMargin;
-      var right = Math.max(this.startVector.x, this.endVector.x);
+      this.offsetTop  = Math.min(this.startVector.y, this.endVector.y) - this.config.canvasMargin;
+      var right  = Math.max(this.startVector.x, this.endVector.x);
       var bottom = Math.max(this.startVector.y, this.endVector.y);
-      var width = right - this.offsetLeft + this.config.canvasMargin * 2;
+      var width  = right - this.offsetLeft + this.config.canvasMargin * 2;
       var height = bottom - this.offsetTop + this.config.canvasMargin * 2;
 
       this.canvasElement = document.createElement('CANVAS');
-      this.canvasElement.style.position = 'absolute';
+      this.canvasElement.style.position = 'fixed';
       this.canvasElement.style.zIndex = this.config.zIndex.toString();
+
+      // Clip canvas if it overflows viewport.
+      if (this.config.clipCanvasOnOverflow === true) {
+        if (this.offsetLeft < 0) {
+          width = width - Math.abs(this.offsetLeft);
+          this.offsetLeft = 0;
+        }
+        if (this.offsetLeft + width > ViewportModel.width()) {
+          width = width - ((this.offsetLeft + width) - ViewportModel.width());
+        }
+        if (this.offsetTop < 0) {
+          height = height - Math.abs(this.offsetTop);
+          this.offsetTop = 0;
+        }
+        if (this.offsetTop + height > ViewportModel.height()) {
+          height = height - ((this.offsetTop + height) - ViewportModel.height());
+        }
+      }
+
       this.canvasElement.style.left = this.offsetLeft.toString() + 'px';
-      this.canvasElement.style.top = this.offsetTop.toString() + 'px';
-      this.canvasElement.style.width = width.toString() + 'px';
+      this.canvasElement.style.top  = this.offsetTop.toString() + 'px';
+      this.canvasElement.style.width  = width.toString() + 'px';
       this.canvasElement.style.height = height.toString() + 'px';
-      this.canvasElement.width = width * this.config.resolutionMultiplier;
+      this.canvasElement.width  = width * this.config.resolutionMultiplier;
       this.canvasElement.height = height * this.config.resolutionMultiplier;
 
       this.config.prepareCanvas(this.canvasElement, this);
-
       this.context = this.canvasElement.getContext('2d');
       this.image = new Image();
       this.image.onload = function () {
@@ -270,7 +290,7 @@ CoinManager.prototype = {
           this.context.drawImage(
             this.image,
             (this.coins[i].position.x - this.offsetLeft - (this.config.coinSize / 2)) * m,
-            (this.coins[i].position.y - this.offsetTop - (this.config.coinSize / 2)) * m,
+            (this.coins[i].position.y - this.offsetTop -  (this.config.coinSize / 2)) * m,
             this.config.coinSize * m,
             this.config.coinSize * m
           );
