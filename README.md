@@ -1,2 +1,2 @@
-# collect-coins-animation
+# 💰 collect-coins-animation
 
